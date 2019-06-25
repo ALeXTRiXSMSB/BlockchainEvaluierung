@@ -1,0 +1,15 @@
+{
+  "name": "service",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "solc": "^0.4.26"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

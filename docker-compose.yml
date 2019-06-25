@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+
+  dev:
+    image: node:11
+    volumes:
+      - nodemodules:/usr/src/service/node_modules
+      - .:/usr/src/service
+    working_dir: /usr/src/service
+    command: /bin/bash #npm run dev
+    stdin_open: true
+    tty: true
+    environment:
+      - NODE_ENV=development
+   # ports:
+   #   - 1234:1234
+   #   - 1235:1235
+
+# requires before: docker volume create nodemodules
+volumes:
+  nodemodules:
+    external: true
