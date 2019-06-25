@@ -1,127 +1,145 @@
 pragma solidity ^0.4.25;
 
 contract evaluation {
+    //Admin
     address public admin;
-    //Studenten adresse (neu)
-    address[] public students;
-    Fragebogen[] fragebogen;
-
-    //Wie ist das so?
-    fragebogen.frage_fuenfer[0].frage_f = "TestFrage?";
-
-
-    // Faecher
-    struct Fach {
-        string name;
-        string dozent_name;
-        int anzahl_teilnehmer;
-    }
-
-    struct Frage_fuenfer {
-        string frage_f;
-        int punkte_f;
-    }
-    struct Frage_dreier{
-        string frage_d;
-        int punkte_d;
-    }
-    struct Frage_bool{
-        string frage_b;
-        int punkte_b;
-    }
-    struct Anmerkung{
-        string frage_a;
-        string text;
-    }
-    // Bewertungsbogen
-    struct Fragebogen {
-       //1 Fach
-       Fach fach;
-       // eine Frage mit drei anwortmöglichkeiten
-       Frage_dreier frage_dreier;
-       // eine Anmerkung
-       Anmerkung anmerkung;
-
-        // eine Frage mit Ja/nein
-       Frage_bool frage_bool;
-
-       // dreiundzwanzig Fragen mit fünf antworten
-       Frage_fuenfer[23] frage_fuenfer;
-
-    }
-
-    constructor()public{
-        admin = msg.sender 
-    }
-
-    function setFragebogen(String namefach, String name_dozent, int anzahl_teilnehmer){
-        require(msg.sender == admin, "Kann nur der Lehrer festlegen.");
- 
-    }
-
-
-
-
-
-    function setNameFaecher(string newName) public {
-        require(msg.sender == admin, "Kann nur der Lehrer festlegen.");
-        
-        faecherStruct.name = newName;
-    }
-
-    function getNameFaecher() public view returns (string) {
-        return faecherStruct.name;
-    }
-
-    function setAnzahlTeilnehmer(int newAnzahlTeilnehmer) public {
-        require(msg.sender == admin, "Kann nur der Lehrer festlegen.");
-        faecherStruct.anzahl_teilnehmer = newAnzahlTeilnehmer;
-    }
-
-    function getAnzahlTeilnehmer() public view returns (int) {
-        return faecherStruct.anzahl_teilnehmer;
-    }
-
+    string private key;
     
+    //Studenten Array
+    address[] public studenten;
+    
+    //Boolean abfrage student abgestimmt?
+    bool[] public abgestimmt;
+    
+    //Bewertungsbogen
+    uint[] public fragen;
+    string[] public anmerkungen;
+    string public bogenHash;
 
-    // hier Fragen festlegen
-    function setFrage(string newFrage) public {
-        require(msg.sender == admin, "Kann nur der Lehrer festlegen.");
-        alle_Bewertungen_mit_FragenStruct.str_frage = newFrage;
+
+    constructor(){
+        admin = msg.sender;
     }
 
-    function getFrage() public view returns (string) {
-        return alle_Bewertungen_mit_FragenStruct.str_frage;
+    function setBogenHash(string _bogenHash) public{
+        require(admin == msg.sender,"Nur der Admin darf den Hash setzen");
+        bogenHash = _bogenHash;
     }
 
-    function setBewertungsnummer(int newBewertungsnummer) public {
-        require(newBewertungsnummer >= 1 && newBewertungsnummer <= 5, "Bewertung von 1 bis 5.");
-            alle_Bewertungen_mit_FragenStruct.int_bewertungsnummer = newBewertungsnummer;
-   }
-
-    function getBewertungsnummer() public view returns (int) {
-        return alle_Bewertungen_mit_FragenStruct.int_bewertungsnummer;
-   }
-
- 
-
-    // hier Fächer festlegen
-    function setFach(faecher[] newFach) public {
-        alle_Bewertungsboegen_fuer_bestimmte_FaecherStruct.arr_faecher = newFach;
+    function setKey(string _key) public{
+        require(admin == msg.sender,"Nur der Admin kann den Key setzen");
+        key = _key;
     }
 
-    function getFach() public view returns (string) {
-        return alle_Bewertungsboegen_fuer_bestimmte_FaecherStruct.arr_faecher;
+    function addMeToList(string _key) public{
+        require(compareStrings(key,_key),"Key ist falsch");
+        require(!(studentInListe(msg.sender)),"Student bereits in der Liste");
+        studenten.push(msg.sender);
+        //fragen.push(studenten.lenght);
     }
 
-    function setBewertungen(alle_Bewertungen_mit_Fragen[10] newBewertungen) public {
-        alle_Bewertungsboegen_fuer_bestimmte_FaecherStruct.arr_bewertungsbogen = newBewertungen;
-   }
+    function studentAbgestimmt(address sender) private returns (bool){
+        for(uint i = 0; i < abgestimmt.length;i++){
+            if(studenten[i] == sender){
+                if(abgestimmt[i]){
+                    //wenn bereits abgestimmt
+                    return false;
+                }
+                else{
+                    //wenn noch nicht abgestimmt
+                    abgestimmt[i] = true;
+                    return true;
+                }
+            }
+        }
+    }
 
-    function getBewertungen() public view returns (alle_Bewertungen_mit_Fragen[10]) {
-        return alle_Bewertungsboegen_fuer_bestimmte_FaecherStruct.arr_bewertungsbogen;
-   }
+    function studentInListe(address sender) private returns (bool){
+        for(uint i = 0; i < studenten.length;i++){
+            if(studenten[i] == sender){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    function isAbstimmungValid(uint[] abstimmung) private returns(bool){
+        for(uint i = 0; i < abstimmung.length;i++){
+            if(i<=17){
+                if(!(abstimmung[i]<=4)){
+                    return false;
+                }
+            }
+            if(i==18){
+                if(!(abstimmung[i]<=2)){
+                    return false;
+                }
+            }
+            if(i==19){
+                if(!(abstimmung[i]<=4)){
+                    return false;
+                }
+            }
+            if(i==20){
+                if(!(abstimmung[i]<=1)){
+                    return false;
+                }
+            }
+            if(i<=23){
+                if(!(abstimmung[i]<=4)){
+                    return false;
+                }
+            }
+        }
+    }
+
+    function isHashCorrect(string _bogenHash) private returns(bool){
+        if(compareStrings(bogenHash,_bogenHash)){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    function evaluieren(uint[] _abstimmung,string _anmerkung,string _bogenHash) public {
+        require(studentInListe(msg.sender),"Student nicht in der Liste");
+        require(studentAbgestimmt(msg.sender),"Student bereits abgestimmt");
+        require(isHashCorrect(_bogenHash),"Falschen Bogen ausgewählt");
+        require(isAbstimmungValid(_abstimmung),"Falsche Werte eingetragen");
+        for(uint i = 0;i < _abstimmung.length;i++){
+            fragen.push(_abstimmung[i]);
+        }
+        anmerkungen.push(_anmerkung);
+    }
 
 
+/**
+    function auswertung() public returns(uint[24]){
+        require(admin == msg.sender,"Nur der Admin darf auswerten");
+        uint[24] memory _auswertung;
+        for(uint i = 0;i<_auswertung.length;i++){
+            _auswertung[i] = 0;
+        }
+        for(uint j=0;j < fragen.length;i++){
+            _auswertung[j%24] += fragen[j];
+        }
+        for(uint k=0;k<_auswertung.length;k++){
+            _auswertung[k] = percent(auswertung[k],studenten.length,1);
+        }
+        return _auswertung;
+    }
+*/
+    function percent(uint numerator, uint denominator, uint precision) public constant returns(uint quotient) {
 
+         // caution, check safe-to-multiply here
+        uint _numerator  = numerator * 10 ** (precision+1);
+        // with rounding of last digit
+        uint _quotient =  ((_numerator / denominator) + 5) / 10;
+        return (_quotient);
+    }
+
+    function compareStrings (string memory a, string memory b) public view returns (bool) {
+        return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))) );
+    }
 }
