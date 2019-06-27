@@ -1,4 +1,5 @@
 pragma solidity ^0.4.25;
+pragma experimental ABIEncoderV2;
 
 contract evaluation {
     //Admin
@@ -144,29 +145,38 @@ contract evaluation {
 
     //Funktionen die für die tests benötigt werden
     
-    function getKey() public returns (string){
+    function getKey() public view returns (string){
         require(admin == msg.sender,"Nur der Admin kann den key einsehen");
         return key;
     }
 
-    function getBogenhash() public returns (string){
+    function getBogenhash() public view returns (string){
         require(admin == msg.sender,"Nur der Admin kann den Bogenhash einsehen");
         return bogenHash;
     }
 
-    function getStudenten() public returns (address[]){
+    function getStudenten() public view returns (address[]){
         require(admin == msg.sender,"Nur der Admin darf die teilnehmer sehen");
         return studenten;
     }
 
-    function getAuswertung() public returns(uint[24]){
+    function getAuswertung() public view returns(uint[24]){
         require(admin == msg.sender,"Nur der Admin darf die Auswertung sehen");
         return auswertung;
     }
 
-    function getAnmerkungen(uint t) public returns(string){
+    function getAnmerkungen() public view returns(string){
         require(admin == msg.sender,"Nur der admin darf das");
-        string tmp = anmerkungen[t];
-        return tmp;
+        string memory rueckgabe;
+        for(uint i = 0; i < anmerkungen.length;i++){
+            bytes memory tmp = bytes(rueckgabe);
+            if(tmp.length != 0){
+                rueckgabe = string(abi.encodePacked(rueckgabe,", ",anmerkungen[i]));
+            }
+            else{
+                rueckgabe = string(abi.encodePacked(anmerkungen[i]));
+            }
+        }
+        return rueckgabe;
     }
 }

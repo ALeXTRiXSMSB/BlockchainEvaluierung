@@ -11,7 +11,7 @@ let accounts;
 let evaluation;
 var key = "das_ist_ein_testkey";
 var abstimmung = [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1];
-var anmerkung = "Das ist eine TestAnmerkung";
+var anmerkung = "test";
 var bogenhash = 'testhash';
 var _key = "das_ist_ein_testkey";
 
@@ -100,22 +100,24 @@ describe("Evaluation Contract", () => {
     await evaluation.methods.addMeToList(key).send({from: accounts[2], gas: '2100000'});
     await evaluation.methods.addMeToList(key).send({from: accounts[3], gas: '2100000'});
     //Studenten Stimmen ab
-    await evaluation.methods.evaluieren(abstimmung, anmerkung, bogenhash).send({from: accounts[1], gas: '2100000'});
-    await evaluation.methods.evaluieren(abstimmung, anmerkung, bogenhash).send({from: accounts[2], gas: '2100000'});
-    await evaluation.methods.evaluieren(abstimmung, anmerkung, bogenhash).send({from: accounts[3], gas: '2100000'});
+    await evaluation.methods.evaluieren(abstimmung, "test1", bogenhash).send({from: accounts[1], gas: '2100000'});
+    await evaluation.methods.evaluieren(abstimmung, "test2", bogenhash).send({from: accounts[2], gas: '2100000'});
+    await evaluation.methods.evaluieren(abstimmung, "test3", bogenhash).send({from: accounts[3], gas: '2100000'});
     //Admin wertet aus
     await evaluation.methods.auswertungAusgabe().send({from: accounts[0], gas: '2100000'});
-    const Auswertung = await evaluation.methods.getAuswertung().send({from: accounts[0], gas: '2100000'});
+    const Auswertung = await evaluation.methods.getAuswertung().call({from: accounts[0], gas: '2100000'});
+    const studenten = await evaluation.methods.getStudenten().call({from: accounts[0]});
+    var ergebnis = [];
     for(var i = 0; i < Auswertung.length;i++){
       assert.equal(Auswertung[i],3);
+      //const studenten = await evaluation.methods.getStudenten().call({from: accounts[0]});
+      var test = Auswertung[i]/studenten.length;
+      ergebnis.push(String(test));
+      console.log(ergebnis[i]);
     }
-    /*
-    *Es ist nicht möglich die Anmerkungen auszugeben weil der Compiler diese Anweisung nicht benötig werden nicht unterstützt
-    *im Browser Test funktioniert die Ausgabe der Anmerkungen
-    * 
-    const anmerkungen1 = await evaluation.methods.getAnmerkungen(1).send({from: accounts[0], gas: '2100000'});
-    console.log(anmerkungen1);
-    */
+    const anmerkungen = await evaluation.methods.getAnmerkungen().call({from: accounts[0], gas: '2100000'});
+      //assert.equal(anmerkungen,anmerkung);
+      console.log(anmerkungen);
   });
 
 });
