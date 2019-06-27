@@ -2,19 +2,22 @@ pragma solidity ^0.4.25;
 
 contract evaluation {
     //Admin
-    address public admin;
+    address private admin;
     string private key;
     
     //Studenten Array
-    address[] public studenten;
+    address[] private studenten;
     
     //Boolean abfrage student abgestimmt?
-    bool[] public abgestimmt;
+    bool[] private abgestimmt;
     
     //Bewertungsbogen
-    uint[] public fragen;
+    uint[] private fragen;
     string[] public anmerkungen;
-    string public bogenHash;
+    string private bogenHash;
+
+    //auswertung
+    uint[24] private auswertung;
 
 
     constructor(){
@@ -32,10 +35,11 @@ contract evaluation {
     }
 
     function addMeToList(string _key) public{
+        require(!(admin == msg.sender),"Admin darf nicht abstimmen");
         require(compareStrings(key,_key),"Key ist falsch");
         require(!(studentInListe(msg.sender)),"Student bereits in der Liste");
         studenten.push(msg.sender);
-        //fragen.push(studenten.lenght);
+        abgestimmt.push(false);
     }
 
     function studentAbgestimmt(address sender) private returns (bool){
@@ -64,33 +68,44 @@ contract evaluation {
     }
 
     function isAbstimmungValid(uint[] abstimmung) private returns(bool){
-        for(uint i = 0; i < abstimmung.length;i++){
-            if(i<=17){
-                if(!(abstimmung[i]<=4)){
-                    return false;
+        uint tmp = 0;
+        uint countfalse = 0;
+        if(abstimmung.length == 24){
+            for(uint i = 0; i < abstimmung.length;i++){
+                tmp = abstimmung[i];
+                if(i<=17){
+                    if(tmp > 4){
+                        countfalse++;
+                    }
+                }
+                else if(i==18){
+                    if(tmp > 2){
+                        countfalse++;
+                    }
+                }else if(i==19){
+                    if(tmp > 4){
+                        countfalse++;
+                    }
+                }else if(i==20){
+                    if(tmp > 1){
+                        countfalse++;
+                    }
+                }else if(i<=24){
+                    if(tmp > 4){
+                        countfalse++;
+                    }
                 }
             }
-            if(i==18){
-                if(!(abstimmung[i]<=2)){
-                    return false;
-                }
+            if(countfalse == 0){
+                return true;
             }
-            if(i==19){
-                if(!(abstimmung[i]<=4)){
-                    return false;
-                }
+            else{
+                return false;
             }
-            if(i==20){
-                if(!(abstimmung[i]<=1)){
-                    return false;
-                }
-            }
-            if(i<=23){
-                if(!(abstimmung[i]<=4)){
-                    return false;
-                }
-            }
+        }else{
+            return false;
         }
+
     }
 
     function isHashCorrect(string _bogenHash) private returns(bool){
@@ -113,33 +128,45 @@ contract evaluation {
         anmerkungen.push(_anmerkung);
     }
 
-
-/**
-    function auswertung() public returns(uint[24]){
+    function auswertungAusgabe() public {
         require(admin == msg.sender,"Nur der Admin darf auswerten");
-        uint[24] memory _auswertung;
-        for(uint i = 0;i<_auswertung.length;i++){
-            _auswertung[i] = 0;
+        for(uint i = 0;i < auswertung.length;i++){
+            auswertung[i] = 0;
         }
-        for(uint j=0;j < fragen.length;i++){
-            _auswertung[j%24] += fragen[j];
+        for(uint j = 0;j < fragen.length;j++){
+            auswertung[j%24] = auswertung[j%24] + fragen[j];
         }
-        for(uint k=0;k<_auswertung.length;k++){
-            _auswertung[k] = percent(auswertung[k],studenten.length,1);
-        }
-        return _auswertung;
-    }
-*/
-    function percent(uint numerator, uint denominator, uint precision) public constant returns(uint quotient) {
-
-         // caution, check safe-to-multiply here
-        uint _numerator  = numerator * 10 ** (precision+1);
-        // with rounding of last digit
-        uint _quotient =  ((_numerator / denominator) + 5) / 10;
-        return (_quotient);
     }
 
-    function compareStrings (string memory a, string memory b) public view returns (bool) {
+    function compareStrings (string memory a, string memory b) private view returns (bool) {
         return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))) );
+    }
+
+    //Funktionen die für die tests benötigt werden
+    
+    function getKey() public returns (string){
+        require(admin == msg.sender,"Nur der Admin kann den key einsehen");
+        return key;
+    }
+
+    function getBogenhash() public returns (string){
+        require(admin == msg.sender,"Nur der Admin kann den Bogenhash einsehen");
+        return bogenHash;
+    }
+
+    function getStudenten() public returns (address[]){
+        require(admin == msg.sender,"Nur der Admin darf die teilnehmer sehen");
+        return studenten;
+    }
+
+    function getAuswertung() public returns(uint[24]){
+        require(admin == msg.sender,"Nur der Admin darf die Auswertung sehen");
+        return auswertung;
+    }
+
+    function getAnmerkungen(uint t) public returns(string memory){
+        require(admin == msg.sender,"Nur der admin darf das");
+        string memory tmp = anmerkungen[t];
+        return tmp;
     }
 }
