@@ -164,9 +164,9 @@ contract evaluation {
         return auswertung;
     }
 
-    function getAnmerkungen(uint t) public returns(string memory){
+    function getAnmerkungen(uint t) public returns(string){
         require(admin == msg.sender,"Nur der admin darf das");
-        string memory tmp = anmerkungen[t];
+        string tmp = anmerkungen[t];
         return tmp;
     }
 }

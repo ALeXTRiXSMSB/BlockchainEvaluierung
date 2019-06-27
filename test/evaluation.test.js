@@ -109,14 +109,13 @@ describe("Evaluation Contract", () => {
     for(var i = 0; i < Auswertung.length;i++){
       assert.equal(Auswertung[i],3);
     }
-    const studenten = await evaluation.methods.getStudenten().call({from: accounts[0]});
-    for(var j = 0;j < studenten.length;j++){
-      console.log(studenten[j]);
-    }
-    const anmerkungen1 = await evaluation.methods.getAnmerkungen(0).send({from: accounts[0], gas: '2100000'});
-    for(var j = 0;j < studenten.length;j++){
-      console.log(anmerkungen1[j]);
-    }
+    /*
+    *Es ist nicht möglich die Anmerkungen auszugeben weil der Compiler diese Anweisung nicht benötig werden nicht unterstützt
+    *im Browser Test funktioniert die Ausgabe der Anmerkungen
+    * 
+    const anmerkungen1 = await evaluation.methods.getAnmerkungen(1).send({from: accounts[0], gas: '2100000'});
+    console.log(anmerkungen1);
+    */
   });
 
 });
